@@ -9,6 +9,7 @@ class Game:
     def shoot_at(self,ind, tup):
         pass
     def field_with_ships(self,index):
+        pass
         
 
 
