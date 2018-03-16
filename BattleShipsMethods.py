@@ -1,25 +1,35 @@
 import random
 
 
-class Game:
-    def __init__(self, fields=[], players=[], current_player=0):
-        self.__fields = fields
-        self.__players = players
-        self.__current_player = current_player
-    def shoot_at(self,ind, tup):
-        pass
-    def field_with_ships(self,index):
-        pass
-        
-
-
-
 def read_field(filename):
     field = []
     with open(filename, 'r', encoding='utf-8', errors='ignore') as file:
         for line in file:
             field.append(list(line.strip('\n')))
     return field
+
+
+def ship_size(data, cords):
+    size = 0
+    if has_ship(data, cords):
+        size += 1
+        newcord = (chr(ord(cords[0]) + 1), cords[1])
+        while ord(newcord[0]) < 75 and has_ship(data, newcord):
+            size += 1
+            newcord = (chr(ord(newcord[0]) + 1), cords[1])
+        newcord = (chr(ord(cords[0]) - 1), cords[1])
+        while ord(newcord[0]) >= 65 and has_ship(data, newcord):
+            size += 1
+            newcord = (chr(ord(newcord[0]) - 1), cords[1])
+        newcord = (chr(ord(cords[0])), cords[1] + 1)
+        while newcord[1] < 10 and has_ship(data, newcord):
+            size += 1
+            newcord = (chr(ord(newcord[0])), cords[1] + 1)
+        newcord = (chr(ord(cords[0])), cords[1] - 1)
+        while newcord[1] >= 0 and has_ship(data, newcord):
+            size += 1
+            newcord = (chr(ord(newcord[0])), cords[1] - 1)
+    return size
 
 
 def has_ship(data, cords):
@@ -46,25 +56,30 @@ def field_to_str(data):
 
 
 def generate_field():
+    ships = []
     field = [['' for j in range(10)] for i in range(10)]
-    field = generate_ship(4, field)
+    field, cords = generate_ship(4, field)
+    ships.append(cords)
     for i in range(2):
-        field = generate_ship(3, field)
+        field, cords = generate_ship(3, field)
+        ships.append(cords)
     for i in range(3):
-        field = generate_ship(2, field)
+        field, cords = generate_ship(2, field)
+        ships.append(cords)
     for i in range(4):
-        field = generate_ship(1, field)
+        field, cords = generate_ship(1, field)
+        ships.append(cords)
     for row in field:
         for i in range(len(row)):
             if row[i] == '':
                 row[i] = ' '
-    return field
+    return field, ships
 
 
 def generate_ship(size, field):
     horizontal = random.randint(0, 1)
+    x, y = 0, 0
     if horizontal:
-        x, y = 0, 0
         while True:
             x, y = random.randint(0, 10 - size), random.randint(0, 10)
             if check_ship(x, y, horizontal, size, field):
@@ -73,7 +88,6 @@ def generate_ship(size, field):
             field[y][x + i] = '*'
         field = field_blank_cells(x, y, horizontal, size, field)
     else:
-        x, y = 0, 0
         while True:
             x, y = random.randint(0, 9), random.randint(0, 10 - size)
             if check_ship(x, y, horizontal, size, field):
@@ -81,7 +95,7 @@ def generate_ship(size, field):
         for i in range(size):
             field[y + i][x] = '*'
         field = field_blank_cells(x, y, horizontal, size, field)
-    return field
+    return field, (x, y, horizontal,size)
 
 
 def check_ship(x, y, hor, size, field):
@@ -187,8 +201,3 @@ def lower_line(x, y, size, field):
             field[y + 1][x + i - 1] = ' '
 
     return field
-
-
-f = generate_field()
-for line in f:
-    print(line)
